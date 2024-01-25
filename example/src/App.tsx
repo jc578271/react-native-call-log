@@ -1,31 +1,34 @@
 import * as React from 'react';
 
-import { StyleSheet, View, Text } from 'react-native';
-import { multiply } from 'react-native-call-log';
+import { PermissionsAndroid } from 'react-native';
+import CallLog from 'react-native-call-log';
 
 export default function App() {
-  const [result, setResult] = React.useState<number | undefined>();
-
   React.useEffect(() => {
-    multiply(3, 7).then(setResult);
+    PermissionsAndroid.check('android.permission.READ_PHONE_STATE').then(
+      (e) => {
+        console.log('permission', e);
+      }
+    );
+    PermissionsAndroid.requestMultiple([
+      'android.permission.READ_PHONE_STATE',
+      'android.permission.READ_CALL_LOG',
+    ]).then();
+    // PermissionsAndroid.request('android.permission.READ_PHONE_STATE').then();
+    CallLog.onIncomingCallEventListener((data) => {
+      console.log('incoming', data);
+    });
+    CallLog.onStartCallEventListener((data) => {
+      console.log('start', data);
+    });
+    CallLog.onEndCallEventListener((data) => {
+      console.log('end', data);
+    });
+
+    return () => {
+      CallLog.removeEventListeners();
+    };
   }, []);
 
-  return (
-    <View style={styles.container}>
-      <Text>Result: {result}</Text>
-    </View>
-  );
+  return null;
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  box: {
-    width: 60,
-    height: 60,
-    marginVertical: 20,
-  },
-});

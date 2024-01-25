@@ -1,22 +1,47 @@
-import { NativeModules, Platform } from 'react-native';
+import { NativeEventEmitter, NativeModules } from 'react-native';
+import type * as t from './types';
+import type { NativeModuleType } from './types';
 
-const LINKING_ERROR =
-  `The package 'react-native-call-log' doesn't seem to be linked. Make sure: \n\n` +
-  Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
-  '- You rebuilt the app after installing the package\n' +
-  '- You are not using Expo Go\n';
+const nativeEventEmitter = new NativeEventEmitter();
 
-const CallLog = NativeModules.CallLog
-  ? NativeModules.CallLog
-  : new Proxy(
-      {},
-      {
-        get() {
-          throw new Error(LINKING_ERROR);
-        },
-      }
-    );
+class BroadcastReceiver implements t.BroadcastReceiverInterface {
+  private _nativeModule: NativeModuleType;
 
-export function multiply(a: number, b: number): Promise<number> {
-  return CallLog.multiply(a, b);
+  constructor() {
+    this._nativeModule = NativeModules.CallLog
+      ? NativeModules.CallLog
+      : new Proxy(
+          {},
+          {
+            get() {
+              // throw new Error(LINKING_ERROR);
+            },
+          }
+        );
+    this.registerReceiver().then();
+  }
+
+  onStartCallEventListener(listener: t.BroadcastEventCallback) {
+    return nativeEventEmitter.addListener('startCall', listener);
+  }
+
+  onEndCallEventListener(listener: t.BroadcastEventCallback) {
+    return nativeEventEmitter.addListener('endCall', listener);
+  }
+
+  onIncomingCallEventListener(listener: t.BroadcastEventCallback) {
+    return nativeEventEmitter.addListener('incomingCall', listener);
+  }
+
+  removeEventListeners() {
+    nativeEventEmitter.removeAllListeners('startCall');
+    nativeEventEmitter.removeAllListeners('endCall');
+    nativeEventEmitter.removeAllListeners('incomingCall');
+  }
+
+  registerReceiver() {
+    return this._nativeModule.registerReceiver();
+  }
 }
+
+export default new BroadcastReceiver();
