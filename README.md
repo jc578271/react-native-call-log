@@ -11,7 +11,7 @@ npm install react-native-call-log
 
 ## Install
 
-### Add receiver and permissions
+### Add permissions
 ```xml
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
@@ -19,7 +19,6 @@ npm install react-native-call-log
   <!-- add permission -->
   <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
   <uses-permission android:name="android.permission.READ_CALL_LOG"/>
-  <uses-permission android:name="android.permission.ANSWER_PHONE_CALLS" />
 
   <application
     android:name=".MainApplication"
@@ -40,12 +39,6 @@ npm install react-native-call-log
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
-    <!-- add receiver -->
-    <receiver android:name="com.calllog.CallReceiver" android:exported="true">
-      <intent-filter>
-        <action android:name="android.intent.action.PHONE_STATE"/>
-      </intent-filter>
-    </receiver>
   </application>
 </manifest>
 
@@ -56,7 +49,7 @@ npm install react-native-call-log
 ```js
 import * as React from 'react';
 
-import { PermissionsAndroid } from 'react-native';
+import { Button, Linking, PermissionsAndroid, View } from 'react-native';
 import CallLog from 'react-native-call-log';
 
 export default function App() {
@@ -84,7 +77,16 @@ export default function App() {
     };
   }, []);
 
-  return null;
+  return (
+    <View>
+      <Button
+        title={'call'}
+        onPress={() => {
+          Linking.openURL('tel://0123456789').then();
+        }}
+      />
+    </View>
+  );
 }
 
 ```

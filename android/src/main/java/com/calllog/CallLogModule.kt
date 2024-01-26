@@ -2,20 +2,20 @@ package com.calllog
 
 import android.content.IntentFilter
 import android.util.Log
-import com.facebook.react.BuildConfig
-import com.facebook.react.bridge.*
+import com.facebook.react.bridge.Promise
+import com.facebook.react.bridge.ReactApplicationContext
+import com.facebook.react.bridge.ReactContextBaseJavaModule
+import com.facebook.react.bridge.ReactMethod
+import com.facebook.react.bridge.WritableMap
 import com.facebook.react.modules.core.DeviceEventManagerModule
 
 
 class CallLogModule(reactContext: ReactApplicationContext) :
-  ReactContextBaseJavaModule(reactContext), LifecycleEventListener {
+  ReactContextBaseJavaModule(reactContext) {
   private var broadcastReceiver = CallReceiver()
 
   init {
     cReactContext = reactContext
-    cReactContext.addLifecycleEventListener(
-      this
-    )
   }
 
   override fun getName(): String {
@@ -63,28 +63,14 @@ class CallLogModule(reactContext: ReactApplicationContext) :
     if (BuildConfig.DEBUG) Log.d(name, "register receiver")
 
     val filter = IntentFilter()
-    filter.addCategory("android.intent.category.DEFAULT")
+    filter.addAction("android.intent.action.PHONE_STATE")
+    filter.addAction("android.intent.action.NEW_OUTGOING_CALL")
 
     getReactContext().registerReceiver(broadcastReceiver, filter)
   }
 
   private fun unregisterBroadcastReceiver() {
     getReactContext().unregisterReceiver(broadcastReceiver)
-  }
-
-  //region: LifecycleEventListener
-  override fun onHostResume() {
-    if (BuildConfig.DEBUG) Log.d(name, "onHostResume: register Application receivers")
-    registerBroadcastReceiver()
-  }
-
-  override fun onHostPause() {
-    if (BuildConfig.DEBUG) Log.d(name, "onHostPause: unregister receivers")
-    unregisterBroadcastReceiver()
-  }
-
-  override fun onHostDestroy() {
-    if (BuildConfig.DEBUG) Log.d(name, "onHostDestroy: Destroy host")
   }
   //endregion
 }

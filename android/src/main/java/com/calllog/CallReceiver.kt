@@ -8,10 +8,7 @@ import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.telephony.PhoneStateListener
-import android.telephony.TelephonyCallback
-import android.telephony.TelephonyCallback.CallStateListener
 import android.telephony.TelephonyManager
-import android.util.Log
 import androidx.core.app.ActivityCompat
 import com.facebook.react.bridge.Arguments
 
@@ -20,7 +17,6 @@ class CallReceiver: BroadcastReceiver() {
   private lateinit var telephonyManager: TelephonyManager;
   private var callStartTime: Long = 0;
   private var callEndTime: Long = 0;
-  private var incomingPhoneNumber: String = ""; // Add this to store the incoming phone number
   private lateinit var callIntent: Intent; // Add this to store the incoming phone number
 
   @SuppressLint("UnsafeProtectedBroadcastReceiver")
@@ -55,46 +51,45 @@ class CallReceiver: BroadcastReceiver() {
     }
   }
 
-  private val callStateListener =
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) object: TelephonyCallback(), CallStateListener {
-      override fun onCallStateChanged(state: Int) {
-        val phoneNumber: String? = callIntent.extras?.getString("incoming_number");
-        onCallStateChange(state, phoneNumber)
-      }
-      // Handle call state change
-    } else null as TelephonyCallback
+//  private val callStateListener =
+//    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) object: TelephonyCallback(), CallStateListener {
+//      override fun onCallStateChanged(state: Int) {
+//        val phoneNumber: String? = callIntent.extras?.getString("incoming_number");
+//        onCallStateChange(state, phoneNumber)
+//      }
+//      // Handle call state change
+//    } else null as TelephonyCallback
 
   private fun onCallStateChange (state: Int, incomingNumber: String?) {
     when (state) {
       TelephonyManager.CALL_STATE_IDLE -> {
         val isCallActive = CallLogModule.getCallActive()
-        if (isCallActive) {
+        if (isCallActive && callStartTime.toInt() != 0) {
           CallLogModule.setCallActive(false);
           callEndTime = System.currentTimeMillis();
           val callDurationMillis: Long = callEndTime - callStartTime;
           // Pass all three values back to React Native
-          if (incomingPhoneNumber !== ""){
-            val result = Arguments.createMap();
-            result.putInt("duration", callDurationMillis.toInt()); // Use putInt
-            result.putInt("startTime", callStartTime.toInt());
-            result.putInt("endTime", callEndTime.toInt());
-            result.putString("phoneNumber", incomingPhoneNumber);
-            CallLogModule.sendEvent("endCall", result)
-          }
+          val result = Arguments.createMap();
+          result.putInt("duration", callDurationMillis.toInt()); // Use putInt
+          result.putInt("startTime", callStartTime.toInt());
+          result.putInt("endTime", callEndTime.toInt());
+          result.putString("phoneNumber", incomingNumber);
+//          Log.d("endCall", result.toString())
+          CallLogModule.sendEvent("endCall", result)
         }
       }
 
       // Implement your logic for IDLE state
       TelephonyManager.CALL_STATE_OFFHOOK -> {
         val isCallActive = CallLogModule.getCallActive();
-        val isCallRinging = CallLogModule.getCallRinging()
-        if (isCallRinging && !isCallActive && incomingPhoneNumber !== "") {
+        if (!isCallActive) {
           CallLogModule.setCallActive(true);
           CallLogModule.setCallRinging(false);
           callStartTime = System.currentTimeMillis();
           val result = Arguments.createMap();
           result.putInt("startTime", callStartTime.toInt())
-          result.putString("phoneNumber", incomingPhoneNumber)
+          result.putString("phoneNumber", incomingNumber)
+//          Log.d("startCall", result.toString())
           CallLogModule.sendEvent("startCall", result)
         }
       }
@@ -102,14 +97,13 @@ class CallReceiver: BroadcastReceiver() {
       // Implement your logic for OFFHOOK state
       TelephonyManager.CALL_STATE_RINGING -> {
         val isCallRinging = CallLogModule.getCallRinging()
-        if (!isCallRinging && incomingNumber !== null) {
+        if (!isCallRinging) {
           CallLogModule.setCallRinging(true)
-          incomingPhoneNumber = incomingNumber;
           val result = Arguments.createMap();
-
-          callStartTime = System.currentTimeMillis();
-          result.putInt("startTime", callStartTime.toInt())
-          result.putString("phoneNumber", incomingPhoneNumber)
+          val _callStartTime = System.currentTimeMillis();
+          result.putInt("startTime", _callStartTime.toInt())
+          result.putString("phoneNumber", incomingNumber)
+//          Log.d("incomingCall", result.toString())
           CallLogModule.sendEvent("incomingCall", result)
         }
       }

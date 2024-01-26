@@ -1,9 +1,9 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <uses-permission android:name="android.permission.INTERNET" />
+
     <uses-permission android:name="android.permission.READ_PHONE_STATE"/>
     <uses-permission android:name="android.permission.READ_CALL_LOG"/>
-    <uses-permission android:name="android.permission.ANSWER_PHONE_CALLS" />
 
     <application
       android:name=".MainApplication"
@@ -24,10 +24,5 @@
             <category android:name="android.intent.category.LAUNCHER" />
         </intent-filter>
       </activity>
-      <receiver android:name="com.calllog.CallReceiver" android:exported="true">
-        <intent-filter>
-          <action android:name="android.intent.action.PHONE_STATE"/>
-        </intent-filter>
-      </receiver>
     </application>
 </manifest>

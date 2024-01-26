@@ -1,8 +1,5 @@
 import type { EmitterSubscription } from 'react-native';
 
-type IntentActionConfigTuple = [string, string][];
-type IntentActionConfig = { action: string; datakey: string }[];
-
 interface BroadcastEventData {
   /**
    * Scanned barcode data from harware scanners
@@ -40,8 +37,6 @@ interface BroadcastReceiverInterface {
 export type {
   NativeModuleType,
   BroadcastReceiverInterface,
-  IntentActionConfigTuple,
-  IntentActionConfig,
   BroadcastEventData,
   BroadcastEventCallback,
 };
