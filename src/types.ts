@@ -1,13 +1,11 @@
-import type { EmitterSubscription } from 'react-native';
-
 interface BroadcastEventData {
   /**
    * Scanned barcode data from harware scanners
    */
-  duration: number;
-  endTime: number;
-  phoneNumber: string;
-  startTime: number;
+  duration?: number;
+  endTime?: number;
+  phoneNumber?: string;
+  startTime?: number;
 }
 type BroadcastEventCallback = (d: BroadcastEventData) => void;
 
@@ -28,9 +26,9 @@ interface BroadcastReceiverInterface {
    * @param cb
    */
   // setIntentActionConfig(args: IntentActionConfig): Promise<boolean>;
-  onStartCallEventListener(cb: BroadcastEventCallback): EmitterSubscription;
-  onEndCallEventListener(cb: BroadcastEventCallback): EmitterSubscription;
-  onIncomingCallEventListener(cb: BroadcastEventCallback): EmitterSubscription;
+  onStartCallEventListener(cb: BroadcastEventCallback): void;
+  onEndCallEventListener(cb: BroadcastEventCallback): void;
+  onIncomingCallEventListener(cb: BroadcastEventCallback): void;
   removeEventListeners(): void;
 }
 
